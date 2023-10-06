@@ -9,8 +9,8 @@ import { Component } from 'react';
 import Signin from './components/signIn/Signin';
 import Register from './components/Register/Register';
 import ParticlesBackground from './components/ParticlesBackground';
-
-
+import { getJWT } from './common/get-jwt';
+import {JWT_STORAGE_KEY} from './common/consts'
 
 class App extends Component {
 
@@ -28,7 +28,8 @@ class App extends Component {
         email: '',
         entries: 0,
         joined: ''
-      }
+      },
+      Bearer:''
     }
   }
 
@@ -44,7 +45,9 @@ class App extends Component {
       }
     })
   }
-
+  setBearer = (token) => {
+    this.setState({Bearer : token})
+  }
   onInputChange = (e) => {
     this.setState({ input: e.target.value });
   }
@@ -140,11 +143,23 @@ class App extends Component {
       })
       .catch(error => console.log('error', error))
       .then(this.setState({box:[]}))
-
   }
 
   render() {
-    const { isSignedIn, route, imgURL, box } = this.state;
+    const { isSignedIn, route, imgURL, box , Bearer} = this.state;
+    let jwt = getJWT()
+    const refreshInterval = setInterval(() => {
+      if (isSignedIn === true) {
+        console.log('signed in')
+        fetch('http://localhost:3000/refresh', {
+          method: 'POST',
+          headers: {Authentication: `Bearer ${Bearer}`},
+        },
+        ).catch((e) => {
+          clearInterval(refreshInterval);
+        })
+      }},5000)
+
     return (
       <div className="App">
         <ParticlesBackground />
@@ -165,7 +180,7 @@ class App extends Component {
           : (
             route === 'register'
               ? <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
-              : <Signin loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
+              : <Signin loadUser={this.loadUser} onRouteChange={this.onRouteChange} setBearer= {this.setBearer}/>
           )
           
         }

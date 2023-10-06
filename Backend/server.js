@@ -5,7 +5,9 @@ const bcrypt = require('bcrypt-nodejs');
 const cors = require('cors');
 const knex = require('knex')
 const jwt = require('jsonwebtoken');
-const cookieParser =require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const REFRESH_TOKEN_COOKIE_NAME = 'my_cookie';
+const ACCESS_TOKEN_COOKIE_NAME = 'another_cookie';
 
 const postgres = knex({
   client: 'pg',
@@ -19,12 +21,47 @@ const postgres = knex({
 
 const app = express();
 app.use(bodyParder.json());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3001',
+  credentials: true,
+}));
 app.use(cookieParser());
-app.get('/', authenticateToken, (req, res) => {
-  res.send('success')
-})
+app.use(authenticateToken)
 
+app.post('/test',(req,res) =>{
+  console.log("test")
+  res.send("test")
+} )
+
+//when does this endpoint is being called?
+app.post('/refresh', (req, res) => {
+  const refreshCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+  if (!refreshCookie) {
+    res.status(401).send('refresh token is missing');
+  }
+
+  postgres.select('*').from('users')
+    .where('token', '=', refreshCookie) 
+    .then(user => {
+      if (!user) {
+        throw new Error('user not found');
+      }
+      const accessToken = generateAccessToken(user[0])
+      const refreshToken = jwt.sign(user[0], process.env.REFRESH_TOKEN_SECRET)
+      postgres.select('*').from('users')
+        .where('email', '=', user[0].email)
+        .update({
+          token: refreshToken
+        })
+        .catch(err => res.status(400).json(err))
+      res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+      res.json({ accessToken });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(401).json('refresh token not found')
+    })
+});
 
 app.post('/signin', (req, res) => {
   const { email, psw } = req.body //
@@ -35,10 +72,9 @@ app.post('/signin', (req, res) => {
     .then(data => {
       const isValid = bcrypt.compareSync(psw, data[0].hash)
       if (isValid) {
-        //create tokens after user validation
-        const accessToken = generateAccessToken(user)
+
+        // create tokens after user validation
         const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
-        console.log({ accessToken: accessToken, refreshToken: refreshToken })
 
         // store token in db & cookie
         postgres.select('*').from('users')
@@ -48,13 +84,15 @@ app.post('/signin', (req, res) => {
           })
           .catch(err => res.status(400).json(err))
 
-        res.cookie('jwt', refreshToken, {httpOnly:true, maxAge: 24*60*60*1000});
 
         //return user data
         return postgres.select('*').from('users')
           .where('email', '=', email)
           .then(user => {
-            res.json(user[0])
+            const accessToken = generateAccessToken(user[0])
+            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: false, domain: 'localhost' });
+            // res.cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: false, domain: 'localhost' });
+            res.json({ accessToken });
           })
           .catch(err => res.status(400).json('unable to get user'))
       } else {
@@ -62,7 +100,7 @@ app.post('/signin', (req, res) => {
       }
     })
     .catch(err => res.status(400).json('wrong credentials'))
-})
+});
 
 app.post('/register', (req, res) => {
   const { email, name, psw } = req.body;
@@ -83,19 +121,32 @@ app.post('/register', (req, res) => {
             joined: new Date()
           })
           .then(user => {
-            res.json(user[0])
+            const accessToken = generateAccessToken(user[0])
+            const refreshToken = jwt.sign(user[0], process.env.REFRESH_TOKEN_SECRET)
+
+            // store token in db & cookie
+            postgres.select('*').from('users')
+              .where('email', '=', email)
+              .update({
+                token: refreshToken
+              })
+              .catch(err => res.status(400).json(err));
+            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+            res.json({ accessToken });
           })
       })
       .then(trx.commit)
       .catch(trx.rollback)
   })
-    .catch(err => res.status(400).json('registration failed'))
+    .catch(err => {
+      console.log({ err });
+      res.status(400).json('registration failed ')
+    });
 
 })
 
 app.get('/profile/:id', (req, res) => {
   const { id } = req.params;
-  let found = false;
   postgres.select('*').from('users').where({ id })
     .then(user => {
       if (user.length) {
@@ -129,54 +180,60 @@ app.post('/token', (req, res) => {
       tokens.map((token, i) => {
         if (token.token == refreshToken) {
           found = true
-          jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '20s'}, (err, email) => {
+          jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '20s' }, (err, email) => {
             if (err) return res.sendStatus(403) //forbidden
             const accessToken = generateAccessToken({ email: email })
             res.json({ accessToken: accessToken })
           })
         }
       })
-      if (!found){
+      if (!found) {
         res.sendStatus(403) // forbidden
       }
     })
 })
 
-
+///add delete cookie
 app.put('/signout', (req, res) => {
-  const cookies = req.cookies
-  if (!cookies?.jwt) return res.sendStatus(204) // no content
-  console.log(cookies.jwt,"cookie")
+  const cookies = req.cookies;
+  if (!cookies) return res.sendStatus(204) // no content
 
   const { id } = req.body
   postgres('users').where('id', '=', id)
     .update({ token: null })
     .returning('*')
     .then(data => {
-      res.clearCookie('jwt', {httpOnly:true}),
-      res.json(data),
-      console.log(data, " successfully logged out")
+      res.clearCookie('my_cookie', { httpOnly: true }),
+        res.json(data),
+        console.log(data, " successfully logged out")
     })
     .catch(err => { res.json(err) })
 })
 
+
 //authenticate access token
 function authenticateToken(req, res, next) {
+  console.log(req.path)
+  if (['/signin', '/register', '/refresh','/signout','/test'].includes(req.path)) {
+    return next();
+  }
+
   const authHeader = req.headers['authorization'];
-  console.log(authHeader,"authHeader")
+  console.log(authHeader, "authHeader");
   const token = authHeader && authHeader.split(' ')[1]
   if (token == null) return res.sendStatus(401)
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) return res.sendStatus(403)
-    req.user = user
+    req.user = user;
     next()
   })
-
 }
 
+
+
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20s' })
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '120s' })
 }
 
 app.listen(3000, () => {

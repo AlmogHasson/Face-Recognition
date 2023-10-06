@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import { decodeAndStoreJWT } from '../../common/decode-jwt';
 
 class Register extends React.Component {
     constructor(props){
@@ -32,8 +33,9 @@ class Register extends React.Component {
             })
         })
         .then( res => res.json())
-        .then(user => {
-            if (user){
+        .then( res => {
+            if (res?.accessToken) {
+                const user = decodeAndStoreJWT(res.accessToken);
                 this.props.loadUser(user)
                 this.props.onRouteChange('home')
             }

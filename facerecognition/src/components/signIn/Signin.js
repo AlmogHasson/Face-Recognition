@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import { decodeAndStoreJWT } from '../../common/decode-jwt';
 
 class Signin extends React.Component {
     constructor(props){
@@ -24,11 +25,14 @@ class Signin extends React.Component {
             body: JSON.stringify({
                 email: this.state.signInEmail,  
                 psw: this.state.signInPsw
-            })
+            }),
+            credentials: 'include'
         })
         .then(res => res.json())
-        .then(user => {
-            if (user.id){
+        .then(res => {
+            if (res.accessToken){
+                const user = decodeAndStoreJWT(res.accessToken);
+                this.props.setBearer(res.accessToken)
                 this.props.loadUser(user)
                 this.props.onRouteChange('home')
             }
