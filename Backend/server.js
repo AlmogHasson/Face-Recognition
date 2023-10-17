@@ -38,11 +38,12 @@ app.get('/test', (req, res) => {
 app.post('/refresh', (req, res) => {
 
   const refreshCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
-  console.log(refreshCookie, "ref cookie")
 
   if (!refreshCookie) {
     res.status(401).send('refresh token is missing');
   }
+
+  //creating a new access token for the user
     postgres.select('*').from('users')
       .where('token', '=', refreshCookie)
       .then( user => {
@@ -52,7 +53,6 @@ app.post('/refresh', (req, res) => {
         const { token: _, ...userWithoutRefreshToken } = user[0];
         const accessToken = generateAccessToken(userWithoutRefreshToken);
         const refreshToken = uuid();
-        console.log(refreshToken, "ref token")
 
         // const refreshToken = jwt.sign(user[0], process.env.REFRESH_TOKEN_SECRET)
         postgres.select('*').from('users')
@@ -63,7 +63,6 @@ app.post('/refresh', (req, res) => {
           .catch(err => res.status(400).json(err))
         res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, overwrite: true, maxAge: 24 * 60 * 60 * 1000 });
         res.send({ accessToken });
-        console.log("got access token")
       })
       .catch(err => {
         console.log(err);
@@ -98,7 +97,7 @@ app.post('/signin', (req, res) => {
           .then(user => {
             const { token: _, ...userWithoutRefreshToken } = user[0];
             const accessToken = generateAccessToken(userWithoutRefreshToken);
-            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true, domain: 'localhost' });
+            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: false, domain: 'localhost' });
             res.json({ accessToken });
           })
           .catch(err => res.status(400).json('unable to get user'))
@@ -202,17 +201,18 @@ app.post('/token', (req, res) => {
 
 ///add delete cookie
 app.put('/signout', (req, res) => {
-  const cookies = req.cookies;
-  if (!cookies) return res.sendStatus(204) // no content
+  const cookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+  console.log(cookie,"logout cookie")
+  if (!cookie) return res.sendStatus(204) // no content
 
   const { id } = req.body
   postgres('users').where('id', '=', id)
     .update({ token: null })
     .returning('*')
     .then(data => {
-      res.clearCookie('my_cookie', { httpOnly: false }),
-        res.json(data),
-        console.log(data, " successfully logged out")
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME),
+      res.json(data),
+      console.log(data, " successfully logged out")
     })
     .catch(err => { res.json(err) })
 })
