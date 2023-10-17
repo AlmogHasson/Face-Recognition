@@ -30,41 +30,46 @@ app.use(authenticateToken)
 
 
 
-app.get('/test',() =>{
+app.get('/test', (req, res) => {
   console.log("testestestesdtesetset")
+  res.send("hello")
 })
 
 app.post('/refresh', (req, res) => {
+
   const refreshCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
   console.log(refreshCookie, "ref cookie")
 
   if (!refreshCookie) {
     res.status(401).send('refresh token is missing');
+  }
+    postgres.select('*').from('users')
+      .where('token', '=', refreshCookie)
+      .then( user => {
+        if (!user) {
+          throw new Error('user not found');
+        }
+        const { token: _, ...userWithoutRefreshToken } = user[0];
+        const accessToken = generateAccessToken(userWithoutRefreshToken);
+        const refreshToken = uuid();
+        console.log(refreshToken, "ref token")
 
-  postgres.select('*').from('users')
-    .where('token', '=', refreshCookie)
-    .then(user => {
-      if (!user) {
-        throw new Error('user not found');
-      }
-      const { token: _, ...userWithoutRefreshToken} = user[0];
-      const accessToken = generateAccessToken(userWithoutRefreshToken);
-      const refreshToken = uuid();
-      // const refreshToken = jwt.sign(user[0], process.env.REFRESH_TOKEN_SECRET)
-      postgres.select('*').from('users')
-        .where('email', '=', user[0].email)
-        .update({
-          token: refreshToken
-        })
-        .catch(err => res.status(400).json(err))
-      res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, overwrite: true, maxAge: 24 * 60 * 60 * 1000 });
-      res.send({accessToken});
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(401).json('refresh token not found')
-    })
-}});
+        // const refreshToken = jwt.sign(user[0], process.env.REFRESH_TOKEN_SECRET)
+        postgres.select('*').from('users')
+          .where('email', '=', user[0].email)
+          .update({
+            token: refreshToken
+          })
+          .catch(err => res.status(400).json(err))
+        res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, overwrite: true, maxAge: 24 * 60 * 60 * 1000 });
+        res.send({ accessToken });
+        console.log("got access token")
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(401).json('refresh token not found')
+      })
+});
 
 app.post('/signin', (req, res) => {
   const { email, psw } = req.body //
@@ -75,10 +80,11 @@ app.post('/signin', (req, res) => {
     .then(data => {
       const isValid = bcrypt.compareSync(psw, data[0].hash)
       if (isValid) {
-
         // create tokens after user validation
-       //  const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET )
+
+        //  const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET )
         const refreshToken = uuid();
+
         // store token in db & cookie
         postgres.select('*').from('users')
           .where('email', '=', email)
@@ -90,7 +96,7 @@ app.post('/signin', (req, res) => {
         return postgres.select('*').from('users')
           .where('email', '=', email)
           .then(user => {
-            const { token: _, ...userWithoutRefreshToken} = user[0];
+            const { token: _, ...userWithoutRefreshToken } = user[0];
             const accessToken = generateAccessToken(userWithoutRefreshToken);
             res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true, domain: 'localhost' });
             res.json({ accessToken });
@@ -214,7 +220,7 @@ app.put('/signout', (req, res) => {
 //authenticate access token
 function authenticateToken(req, res, next) {
   console.log(req.path)
-  if (['/signin', '/register', '/refresh','/signout', '/test'].includes(req.path)) {
+  if (['/signin', '/register', '/refresh', '/signout', '/test'].includes(req.path)) {
     return next();
   }
 
@@ -232,7 +238,7 @@ function authenticateToken(req, res, next) {
 
 
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s'})
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
 }
 
 app.listen(3000, () => {
