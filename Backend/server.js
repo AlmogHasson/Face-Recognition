@@ -36,7 +36,6 @@ app.get('/test', (req, res) => {
 })
 
 app.post('/refresh', (req, res) => {
-
   const refreshCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
 
   if (!refreshCookie) {
@@ -51,6 +50,7 @@ app.post('/refresh', (req, res) => {
           throw new Error('user not found');
         }
         const { token: _, ...userWithoutRefreshToken } = user[0];
+        console.log(userWithoutRefreshToken, "user w/o token")
         const accessToken = generateAccessToken(userWithoutRefreshToken);
         const refreshToken = uuid();
 
@@ -61,7 +61,7 @@ app.post('/refresh', (req, res) => {
             token: refreshToken
           })
           .catch(err => res.status(400).json(err))
-        res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, overwrite: true, maxAge: 24 * 60 * 60 * 1000 });
+        res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, overwrite:true, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true, domain: 'localhost' });
         res.send({ accessToken });
       })
       .catch(err => {
@@ -97,7 +97,7 @@ app.post('/signin', (req, res) => {
           .then(user => {
             const { token: _, ...userWithoutRefreshToken } = user[0];
             const accessToken = generateAccessToken(userWithoutRefreshToken);
-            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: false, domain: 'localhost' });
+            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true, domain: 'localhost' });
             res.json({ accessToken });
           })
           .catch(err => res.status(400).json('unable to get user'))
@@ -137,7 +137,7 @@ app.post('/register', (req, res) => {
                 token: refreshToken
               })
               .catch(err => res.status(400).json(err));
-            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000 });
+            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true, domain: 'localhost' });
             res.json({ accessToken });
           })
       })
@@ -173,33 +173,7 @@ app.put('/image', (req, res) => {
     .catch(err => res.status(400).json('unable to get entries'))
 })
 
-app.post('/token', (req, res) => {
-  const cookies = req.cookies
-  if (!cookies?.jwt) return res.sendStatus(401) //unauthorized
-  console.log(cookies.jwt)
-  const refreshToken = req.cookies.jwt
-  let found = false
 
-  postgres.select('token').from('users')
-    .returning('token')
-    .then(tokens => {
-      tokens.map((token, i) => {
-        if (token.token == refreshToken) {
-          found = true
-          jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '20s' }, (err, email) => {
-            if (err) return res.sendStatus(403) //forbidden
-            const accessToken = generateAccessToken({ email: email })
-            res.json({ accessToken: accessToken })
-          })
-        }
-      })
-      if (!found) {
-        res.sendStatus(403) // forbidden
-      }
-    })
-})
-
-///add delete cookie
 app.put('/signout', (req, res) => {
   const cookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
   console.log(cookie,"logout cookie")
