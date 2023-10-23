@@ -29,12 +29,6 @@ app.use(cors({
 app.use(authenticateToken)
 
 
-
-app.get('/test', (req, res) => {
-  console.log("testestestesdtesetset")
-  res.send("hello")
-})
-
 app.post('/refresh', (req, res) => {
   const refreshCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
 
@@ -54,7 +48,6 @@ app.post('/refresh', (req, res) => {
         const accessToken = generateAccessToken(userWithoutRefreshToken);
         const refreshToken = uuid();
 
-        // const refreshToken = jwt.sign(user[0], process.env.REFRESH_TOKEN_SECRET)
         postgres.select('*').from('users')
           .where('email', '=', user[0].email)
           .update({
@@ -71,17 +64,15 @@ app.post('/refresh', (req, res) => {
 });
 
 app.post('/signin', (req, res) => {
-  const { email, psw } = req.body //
+  const { email, psw } = req.body 
   const user = { email: email }
 
   postgres.select('email', 'hash').from('login')
-    .where('email', '=', email) //
+    .where('email', '=', email) 
     .then(data => {
       const isValid = bcrypt.compareSync(psw, data[0].hash)
-      if (isValid) {
-        // create tokens after user validation
 
-        //  const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET )
+      if (isValid) {
         const refreshToken = uuid();
 
         // store token in db & cookie
@@ -91,6 +82,7 @@ app.post('/signin', (req, res) => {
             token: refreshToken
           })
           .catch(err => res.status(400).json(err))
+
         //return user data
         return postgres.select('*').from('users')
           .where('email', '=', email)
@@ -176,7 +168,6 @@ app.put('/image', (req, res) => {
 
 app.put('/signout', (req, res) => {
   const cookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
-  console.log(cookie,"logout cookie")
   if (!cookie) return res.sendStatus(204) // no content
 
   const { id } = req.body
@@ -194,12 +185,11 @@ app.put('/signout', (req, res) => {
 //authenticate access token
 function authenticateToken(req, res, next) {
   console.log(req.path)
-  if (['/signin', '/register', '/refresh', '/signout', '/test'].includes(req.path)) {
+  if (['/signin', '/register', '/refresh', '/signout'].includes(req.path)) {
     return next();
   }
 
   const authHeader = req.headers['authorization'];
-  console.log(authHeader, "authHeader");
   const token = authHeader && authHeader.split(' ')[1]
   if (token == null) return res.sendStatus(401)
 
