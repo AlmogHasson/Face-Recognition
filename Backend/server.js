@@ -8,6 +8,7 @@ const { v4: uuid } = require('uuid');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const REFRESH_TOKEN_COOKIE_NAME = 'my_cookie';
+const path = require("path");
 
 const postgres = knex({
   client: 'pg',
@@ -20,12 +21,42 @@ const postgres = knex({
 });
 
 const app = express();
+
+const server = http.createServer(app);
+const io = new Server(server,{
+  cors:{
+    origin:"*",
+  }
+})
+const _dirname = path.dirname("");
+const buildPath = path.join(_dirname, "../Backend/build");
+app.use(express.static(buildPath));
+io.on("connection", (socket)=>{
+  console.log("Connected");
+
+  socket.on("fr", (fr) => {
+    io.emit("fr", fr);
+  });
+});
+
+
 app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
   origin: 'http://localhost:3001',
   credentials: true,
 }));
+
+
+app.get('/*', function(req,res){
+  res.sendFile(
+    path.join(__dirname, '../build', 'index.html'),
+  function(err){
+    if (err) {
+      res.status(500).send(err);
+    }
+  })
+})
 
 app.use(express.static(path.resolve(__dirname, "../build")))
 app.use(authenticateToken)
@@ -207,22 +238,13 @@ function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
 }
 
-app.get('/*', function(req,res){
-  res.sendFile(
-    path.join(__dirname, '../build', 'index.html'),
-  function(err){
-    if (err) {
-      res.status(500).send(err);
-    }
-  })
-})
 
 // app.listen(3000, () => {
 //   console.log('running')
 // })
 
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, ()=> console.log(`Server running on port ${PORT}`))
+server.listen(PORT, ()=> console.log(`Server running on port ${PORT}`))
 
 
 
