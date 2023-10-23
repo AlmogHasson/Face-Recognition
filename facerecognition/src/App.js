@@ -1,7 +1,7 @@
 import './App.css';
 import 'tachyons'
 import Rank from './components/Rank';
-// import Logo from './components/Logo/Logo';
+import Logo from './components/Logo/Logo';
 import Navigation from './components/Navigation/Navigation';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition'
 import ImageInputForm from './components/ImageInputForm/ImageInputForm';
@@ -10,7 +10,8 @@ import Signin from './components/signIn/Signin';
 import Register from './components/Register/Register';
 import ParticlesBackground from './components/ParticlesBackground';
 import { getJWT } from './common/get-jwt';
-import {JWT_STORAGE_KEY} from './common/consts'
+import { decodeAndStoreJWT } from './common/decode-jwt';
+import { JWT_STORAGE_KEY } from './common/consts';
 
 class App extends Component {
 
@@ -29,10 +30,11 @@ class App extends Component {
         entries: 0,
         joined: ''
       },
-      Bearer:''
+      Bearer: '',
     }
   }
 
+  refreshIntervalRef
 
   loadUser = (data) => {
     this.setState({
@@ -45,9 +47,11 @@ class App extends Component {
       }
     })
   }
+
   setBearer = (token) => {
-    this.setState({Bearer : token})
+    this.setState({ Bearer: token })
   }
+
   onInputChange = (e) => {
     this.setState({ input: e.target.value });
   }
@@ -74,19 +78,62 @@ class App extends Component {
 
   onRouteChange = (route) => {
     if (route === 'signout') {
-      this.setState({ isSignedIn: false })
+      clearInterval(this.refreshIntervalRef)
+      window.localStorage.removeItem(JWT_STORAGE_KEY);
+      this.setState({ isSignedIn: false });
+
       fetch('http://localhost:3000/signout', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', },
-            body: JSON.stringify({
-              id: this.state.user.id
-            })
-          })
-          .catch(err =>{console.log(err)})
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: this.state.user.id
+        })
+      })
+        .catch(err => { console.log(err) })
     } else if (route === 'home') {
       this.setState({ isSignedIn: true })
     }
     this.setState({ route: route })
+  }
+
+  runInterval = () => {
+    let jwt = getJWT()
+    let expDate = jwt.exp
+
+    this.refreshIntervalRef = setInterval(() => {
+      let refreshedJwt = getJWT()
+      expDate = refreshedJwt.exp
+
+      fetch('http://localhost:3000/refresh', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(res => res.json())
+        .then(res => {
+          if (res.accessToken) {
+            decodeAndStoreJWT(res.accessToken)
+          }
+        }
+        )
+        .catch((e) => {
+          console.log(e);
+          clearInterval(this.refreshIntervalRef);
+          console.log("interval cleared")
+        })
+    }, expDate * 1000 - Date.now())
+  }
+
+  componentWillUnmount() {
+    console.log("componentWillUnmount and clearInteval")
+    clearInterval(this.refreshIntervalRef)
   }
 
   onImgSubmit = () => {
@@ -118,7 +165,7 @@ class App extends Component {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
-        'Authorization': 'Key ' + PAT
+        'Authorization': 'Key ' + PAT,
       },
       body: raw
     };
@@ -129,7 +176,12 @@ class App extends Component {
         if (result) {
           fetch('http://localhost:3000/image', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', },
+            credentials: 'include',
+            headers: {
+              Authorization: `Bearer ${this.state.Bearer}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
             body: JSON.stringify({
               id: this.state.user.id
             })
@@ -142,23 +194,11 @@ class App extends Component {
         this.displayFaceBox(this.calculteFaceArea(result))
       })
       .catch(error => console.log('error', error))
-      .then(this.setState({box:[]}))
+      .then(this.setState({ box: [] }))
   }
 
   render() {
-    const { isSignedIn, route, imgURL, box , Bearer} = this.state;
-    let jwt = getJWT()
-    const refreshInterval = setInterval(() => {
-      if (isSignedIn === true) {
-        console.log('signed in')
-        fetch('http://localhost:3000/refresh', {
-          method: 'POST',
-          headers: {Authentication: `Bearer ${Bearer}`},
-        },
-        ).catch((e) => {
-          clearInterval(refreshInterval);
-        })
-      }},5000)
+    const { isSignedIn, route, imgURL, box } = this.state;
 
     return (
       <div className="App">
@@ -166,7 +206,7 @@ class App extends Component {
         <Navigation isSignedIn={isSignedIn} onRouteChange={this.onRouteChange} />
         {route === 'home'
           ? <div >
-            {/* <Logo /> */}
+            <Logo />
             <Rank
               name={this.state.user.name}
               entries={this.state.user.entries} />
@@ -176,18 +216,23 @@ class App extends Component {
               onImgSubmit={this.onImgSubmit} />
             <FaceRecognition box={box} imgURL={imgURL} />
           </div>
-
           : (
             route === 'register'
-              ? <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
-              : <Signin loadUser={this.loadUser} onRouteChange={this.onRouteChange} setBearer= {this.setBearer}/>
+              ? <Register
+                loadUser={this.loadUser}
+                onRouteChange={this.onRouteChange}
+              />
+              : <Signin
+                runInterval={this.runInterval}
+                loadUser={this.loadUser}
+                onRouteChange={this.onRouteChange}
+                setBearer={this.setBearer}
+              />
           )
-          
         }
       </div>
     );
   }
-
 }
 
 export default App;

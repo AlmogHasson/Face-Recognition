@@ -1,12 +1,12 @@
 import React from "react";
 import './ImageInputForm.css'
 
-
 const ImageInputForm = ({onInputChange, onImgSubmit, box }) => {
+
   return (
     <div >
       <p className="f3 white">
-        {'This Magic Brain will detect faces in your pictures. Give it a try!'}
+        {'This Magic Brain will detect faces in your pictures. Give it a try and make sure to use https addresses only!'}
       </p>
       <div className="white f3">
       {box.length ? <p>{`${box.length} Faces detected in the current entry! `}</p> : <p> No Faces Detected</p>}

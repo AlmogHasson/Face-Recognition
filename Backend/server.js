@@ -26,6 +26,8 @@ app.use(cors({
   origin: 'http://localhost:3001',
   credentials: true,
 }));
+
+app.use(express.static(path.resolve(__dirname, "../build")))
 app.use(authenticateToken)
 
 
@@ -205,9 +207,22 @@ function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
 }
 
-app.listen(3000, () => {
-  console.log('running')
+app.get('/*', function(req,res){
+  res.sendFile(
+    path.join(__dirname, '../build', 'index.html'),
+  function(err){
+    if (err) {
+      res.status(500).send(err);
+    }
+  })
 })
+
+// app.listen(3000, () => {
+//   console.log('running')
+// })
+
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, ()=> console.log(`Server running on port ${PORT}`))
 
 
 

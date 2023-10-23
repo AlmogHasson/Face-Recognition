@@ -2,45 +2,45 @@ import React from 'react';
 import { decodeAndStoreJWT } from '../../common/decode-jwt';
 
 class Register extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
-            email:'',
+            email: '',
             psw: '',
             name: ''
         }
     }
-     onNameChange = (e) => {
-        this.setState({name : e.target.value})
-     }
+    onNameChange = (e) => {
+        this.setState({ name: e.target.value })
+    }
 
-     onEmailChange = (e) => {
-        this.setState({email : e.target.value})
-     }
+    onEmailChange = (e) => {
+        this.setState({ email: e.target.value })
+    }
 
-     onPswChange = (e) => {
-        this.setState({psw : e.target.value})
-     }
+    onPswChange = (e) => {
+        this.setState({ psw: e.target.value })
+    }
 
-     onSubmit = () =>{
+    onSubmit = () => {
         fetch('http://localhost:3000/register', {
-            method:'post',
-            headers : {'Content-Type':'application/json'},
+            method: 'post',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                email: this.state.email,  
+                email: this.state.email,
                 psw: this.state.psw,
                 name: this.state.name
             })
         })
-        .then( res => res.json())
-        .then( res => {
-            if (res?.accessToken) {
-                const user = decodeAndStoreJWT(res.accessToken);
-                this.props.loadUser(user)
-                this.props.onRouteChange('home')
-            }
-        })
-     }
+            .then(res => res.json())
+            .then(res => {
+                if (res?.accessToken) {
+                    const user = decodeAndStoreJWT(res.accessToken);
+                    this.props.loadUser(user)
+                    this.props.onRouteChange('home')
+                }
+            })
+    }
 
     render() {
         return (
@@ -52,26 +52,26 @@ class Register extends React.Component {
                             <div className="mt3">
                                 <label className="db fw6 lh-copy f6 " htmlFor="name">Name</label>
                                 <input className="pa2 input-reset ba bg-transparent white hover-bg-black b--white pointer hover-white w-100"
-                                 type="text" 
-                                 name="name" 
-                                 id="name"
-                                 onChange={this.onNameChange} />
+                                    type="text"
+                                    name="name"
+                                    id="name"
+                                    onChange={this.onNameChange} />
                             </div>
                             <div className="mt3">
                                 <label className="db fw6 lh-copy f6 " htmlFor="email-address">Email</label>
-                                <input className="pa2 input-reset ba bg-transparent white hover-bg-black b--white pointer hover-white w-100" 
-                                 type="email"
-                                 name="email-address" 
-                                 id="email-address"
-                                 onChange={this.onEmailChange} />
+                                <input className="pa2 input-reset ba bg-transparent white hover-bg-black b--white pointer hover-white w-100"
+                                    type="email"
+                                    name="email-address"
+                                    id="email-address"
+                                    onChange={this.onEmailChange} />
                             </div>
                             <div className="mv3">
                                 <label className="db fw6 lh-copy f6" htmlFor="password">Password</label>
                                 <input className="pa2 input-reset ba bg-transparent white hover-bg-black b--white pointer hover-white w-100"
-                                 type="password"
-                                 name="password"
-                                 id="password"
-                                 onChange={this.onPswChange} />
+                                    type="password"
+                                    name="password"
+                                    id="password"
+                                    onChange={this.onPswChange} />
                             </div>
                         </fieldset>
                         <div>

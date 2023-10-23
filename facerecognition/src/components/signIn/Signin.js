@@ -6,7 +6,8 @@ class Signin extends React.Component {
         super(props);
         this.state = {
             signInEmail:'',
-            signInPsw: ''
+            signInPsw: '',
+          
         }
     }
 
@@ -35,6 +36,7 @@ class Signin extends React.Component {
                 this.props.setBearer(res.accessToken)
                 this.props.loadUser(user)
                 this.props.onRouteChange('home')
+                this.props.runInterval()
             }
         })
      }
@@ -53,16 +55,21 @@ class Signin extends React.Component {
                              type="email"
                              name="email-address" 
                              id="email-address"
+                             autoComplete='on'
                              onChange={this.onEmailChange}
                              />
                         </div>
                         <div className="mv3">
                             <label className="db fw6 lh-copy f6" htmlFor="password">Password</label>
+                            <form>
                             <input className="b pa2 input-reset ba bg-transparent  white hover-bg-black b--white pointer hover-white w-100"
                              type="password"
                              name="password"
+                             autoComplete='on'
                              id="password"
-                             onChange={this.onPswChange}/>
+                             onChange={this.onPswChange}/> 
+                            </form>
+                            
                         </div>
                     </fieldset>
                     <div>

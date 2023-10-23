@@ -13,7 +13,6 @@ const FaceRecognition = ({ imgURL, box }) => {
     })
   }
 
-
   return (
     <div className='center ma'>
       <div className="absolute mt2" >
@@ -24,7 +23,6 @@ const FaceRecognition = ({ imgURL, box }) => {
       </div>
     </div>
   )
-
 }
 
 export default FaceRecognition;
