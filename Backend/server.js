@@ -9,8 +9,8 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const REFRESH_TOKEN_COOKIE_NAME = 'my_cookie';
 const path = require("path");
-const Server = require("socket.io").Server;
 const http = require("http");
+const Server = require("socket.io").Server
 
 const postgres = knex({
   client: 'pg',
