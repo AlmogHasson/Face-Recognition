@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "socket.io":"^4.7.2",
     "bcrypt-nodejs": "^0.0.3",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
@@ -21,6 +20,7 @@
     "knex": "^2.4.2",
     "particles-bg": "^2.5.5",
     "pg": "^8.11.1",
+    "socket.io": "^4.7.2",
     "tsparticles": "^2.10.1",
     "uuid": "^9.0.1"
   },
