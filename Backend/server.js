@@ -28,16 +28,32 @@ const server = http.createServer(app);
 const io = new Server(server,{
   cors:{
     origin:"*",
-  }
-})
+  },
+});
 const _dirname = path.dirname("");
 const buildPath = path.join(_dirname, "../Backend/build");
 app.use(express.static(buildPath));
-io.on("connection", (socket)=>{
+
+app.get("/*", function (req,res) {
+  res.sendFile(
+    path.join(__dirname, '../facerecognition/build', 'index.html'),
+  function(err){
+    if (err) {
+      res.status(500).send(err);
+    }
+  });
+});
+
+
+io.on("connection", (socket) => {
   console.log("Connected");
 
   socket.on("fr", (fr) => {
     io.emit("fr", fr);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("disconnected");
   });
 });
 
@@ -48,17 +64,6 @@ app.use(cors({
   origin: 'http://localhost:3001',
   credentials: true,
 }));
-
-
-app.get('/*', function(req,res){
-  res.sendFile(
-    path.join(__dirname, '../build', 'index.html'),
-  function(err){
-    if (err) {
-      res.status(500).send(err);
-    }
-  })
-})
 
 app.use(express.static(path.resolve(__dirname, "../build")))
 app.use(authenticateToken)
