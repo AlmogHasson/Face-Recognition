@@ -205,7 +205,6 @@ app.put('/image', (req, res) => {
     .catch(err => res.status(400).json('unable to get entries'))
 })
 
-
 app.put('/signout', (req, res) => {
   const cookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
   if (!cookie) return res.sendStatus(204) // no content
@@ -240,18 +239,17 @@ function authenticateToken(req, res, next) {
   })
 }
 
-
 function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
 }
-
+const PORT = process.env.PORT || 5001;
+server.listen(PORT, ()=> console.log(`Server running on port ${PORT}`))
 
 // app.listen(3000, () => {
 //   console.log('running')
 // })
 
-const PORT = process.env.PORT || 5001;
-server.listen(PORT, ()=> console.log(`Server running on port ${PORT}`))
+
 
 
 
