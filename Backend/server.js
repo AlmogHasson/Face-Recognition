@@ -8,9 +8,6 @@ const { v4: uuid } = require('uuid');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const REFRESH_TOKEN_COOKIE_NAME = 'my_cookie';
-const path = require("path");
-const http = require("http");
-const Server = require("socket.io").Server
 
 const postgres = knex({
   client: 'pg',
@@ -23,49 +20,12 @@ const postgres = knex({
 });
 
 const app = express();
-
-const server = http.createServer(app);
-const io = new Server(server,{
-  cors:{
-    origin:"*",
-  },
-});
-const _dirname = path.dirname("");
-const buildPath = path.join(_dirname, "../Backend/build");
-app.use(express.static(buildPath));
-
-app.get("/*", function (req,res) {
-  res.sendFile(
-    path.join(__dirname, '../facerecognition/build', 'index.html'),
-  function(err){
-    if (err) {
-      res.status(500).send(err);
-    }
-  });
-});
-
-
-io.on("connection", (socket) => {
-  console.log("Connected");
-
-  socket.on("fr", (fr) => {
-    io.emit("fr", fr);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("disconnected");
-  });
-});
-
-
 app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
   origin: 'http://localhost:3001',
   credentials: true,
 }));
-
-app.use(express.static(path.resolve(__dirname, "../build")))
 app.use(authenticateToken)
 
 
@@ -205,6 +165,7 @@ app.put('/image', (req, res) => {
     .catch(err => res.status(400).json('unable to get entries'))
 })
 
+
 app.put('/signout', (req, res) => {
   const cookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
   if (!cookie) return res.sendStatus(204) // no content
@@ -239,18 +200,14 @@ function authenticateToken(req, res, next) {
   })
 }
 
+
 function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
 }
-const PORT = process.env.PORT || 5001;
-server.listen(PORT, ()=> console.log(`Server running on port ${PORT}`))
 
-// app.listen(3000, () => {
-//   console.log('running')
-// })
-
-
-
+app.listen(3000, () => {
+  console.log('running')
+})
 
 
 
