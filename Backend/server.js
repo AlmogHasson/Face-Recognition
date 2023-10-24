@@ -205,8 +205,8 @@ function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
 }
 
-app.listen(3000, () => {
-  console.log('running')
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`running on port ${process.env.PORT}`)
 })
 
 
