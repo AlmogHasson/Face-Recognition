@@ -12,6 +12,7 @@
     "url": "git+https://github.com/AlmogHasson/Face-Recognition.git"
   },
   "dependencies": {
+    "socket.io":"^4.7.2",
     "bcrypt-nodejs": "^0.0.3",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
