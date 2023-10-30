@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "npm run start": "node server.js"
+    "run start": "node server.js"
   },
   "engines": {
     "npm": "8.5.5",
