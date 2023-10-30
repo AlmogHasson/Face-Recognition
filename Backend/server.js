@@ -12,7 +12,9 @@ const REFRESH_TOKEN_COOKIE_NAME = 'my_cookie';
 const postgres = knex({
   client: 'pg',
   connection: process.env.PG_CONNECTION_STRING,
-  searchPath: ['knex', 'public'],
+  host: "dpg-ckvqfpmb0mos73bueijg-a",
+  port: "5432",
+  user: "smart_brain_a0tg_user",
 });
 
 
