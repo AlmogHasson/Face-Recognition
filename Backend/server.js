@@ -23,11 +23,15 @@ const app = express();
 app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
-  // origin: 'http://localhost:3001',
-  origin:"https://almoghasson.github.io/Face-Recognition/",
+  origin: 'http://localhost:3001',
+  // origin:"https://almoghasson.github.io/Face-Recognition/",
   credentials: true,
 }));
 app.use(authenticateToken)
+
+app.get('/', (req , res)=>{
+  res.send("success")
+});
 
 
 app.post('/refresh', (req, res) => {
@@ -186,7 +190,7 @@ app.put('/signout', (req, res) => {
 //authenticate access token
 function authenticateToken(req, res, next) {
   console.log(req.path)
-  if (['/signin', '/register', '/refresh', '/signout'].includes(req.path)) {
+  if (['/signin', '/register', '/refresh', '/signout',''].includes(req.path)) {
     return next();
   }
 
