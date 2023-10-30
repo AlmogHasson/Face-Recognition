@@ -33,7 +33,6 @@ class App extends Component {
       Bearer: '',
     }
   }
-
   refreshIntervalRef
 
   loadUser = (data) => {
@@ -82,7 +81,7 @@ class App extends Component {
       window.localStorage.removeItem(JWT_STORAGE_KEY);
       this.setState({ isSignedIn: false });
 
-      fetch('http://localhost:3000/signout', {
+      fetch('https://face-recognition-api-n3yg.onrender.com/signout', {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -108,7 +107,7 @@ class App extends Component {
       let refreshedJwt = getJWT()
       expDate = refreshedJwt.exp
 
-      fetch('http://localhost:3000/refresh', {
+      fetch('https://face-recognition-api-n3yg.onrender.com/refresh', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -174,7 +173,7 @@ class App extends Component {
       .then(response => response.json())
       .then(result => {
         if (result) {
-          fetch('http://localhost:3000/image', {
+          fetch('https://face-recognition-api-n3yg.onrender.com/image', {
             method: 'PUT',
             credentials: 'include',
             headers: {
