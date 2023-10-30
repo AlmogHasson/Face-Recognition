@@ -190,7 +190,7 @@ app.put('/signout', (req, res) => {
 //authenticate access token
 function authenticateToken(req, res, next) {
   console.log(req.path)
-  if (['/signin', '/register', '/refresh', '/signout',''].includes(req.path)) {
+  if (['/signin', '/register', '/refresh', '/signout','/'].includes(req.path)) {
     return next();
   }
 
@@ -208,7 +208,7 @@ function authenticateToken(req, res, next) {
 function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
 }
-
+const PORT = 
 app.listen(process.env.PORT || 3000, () => {
   console.log(`running on port ${process.env.PORT}`)
 })
