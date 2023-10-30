@@ -12,12 +12,13 @@ const REFRESH_TOKEN_COOKIE_NAME = 'my_cookie';
 const postgres = knex({
   client: 'pg',
   connection: {
-    host: '127.0.0.1',
-    user: 'postgres',
-    password: 'xywbti32tyt',
-    database: 'smart-brain'
+    host: 'dpg-ckvqfpmb0mos73bueijg-a',
+    port: "5432",
+    user: 'smart_brain_a0tg_user',
+    database: 'smart_brain_a0tg'
   }
 });
+
 
 const app = express();
 app.use(cookieParser());
