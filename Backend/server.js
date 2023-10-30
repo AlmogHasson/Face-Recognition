@@ -23,8 +23,8 @@ const app = express();
 app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
-  origin: 'http://localhost:3001',
-  // origin:"https://almoghasson.github.io/Face-Recognition/",
+  // origin: 'http://localhost:3001',
+  origin:"https://almoghasson.github.io/Face-Recognition/",
   credentials: true,
 }));
 app.use(authenticateToken)
@@ -204,7 +204,6 @@ function authenticateToken(req, res, next) {
     next()
   })
 }
-
 
 function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
