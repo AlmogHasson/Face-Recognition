@@ -20,7 +20,10 @@ const postgres = knex({
 const app = express();
 app.use(cookieParser());
 app.use(bodyParder.json());
-app.use(cors());
+app.use(cors({
+  origin:["https://almoghasson.github.io/Face-Recognition/"],
+  credentials: true,
+}));
 app.use(authenticateToken)
 
 app.get('/', (req , res)=>{
