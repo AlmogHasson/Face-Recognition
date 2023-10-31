@@ -21,7 +21,7 @@ const app = express();
 app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
-  origin:["https://almoghasson.github.io/Face-Recognition/"],
+  origin:["https://almoghasson.github.io/Face-Recognition/","http://localhost:3001"],
   credentials: true,
 }));
 app.use(authenticateToken)
