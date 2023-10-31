@@ -22,6 +22,7 @@ app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
   origin:["https://almoghasson.github.io/Face-Recognition/","http://localhost:3001"],
+  allowedHeaders: ['Content-Type', 'Origin', 'Accept', 'Authorization'],
   credentials: true,
 }));
 app.use(authenticateToken)
