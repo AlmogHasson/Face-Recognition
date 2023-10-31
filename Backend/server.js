@@ -17,13 +17,12 @@ const postgres = knex({
   user: "smart_brain_a0tg_user",
 });
 
-
 const app = express();
 app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
   // origin: 'http://localhost:3001',
-  origin:"*",
+  origin:["https://almoghasson.github.io/Face-Recognition/","https://almoghasson.github.io/"],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   
@@ -209,7 +208,7 @@ function authenticateToken(req, res, next) {
 function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
 }
-const PORT = 
+
 app.listen(process.env.PORT || 3000, () => {
   console.log(`running on port ${process.env.PORT}`)
 })
