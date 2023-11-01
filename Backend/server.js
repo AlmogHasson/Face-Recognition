@@ -22,7 +22,7 @@ app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
   origin:["https://almoghasson.github.io/Face-Recognition/","http://localhost:3001"],
-  allowedHeaders: ['Content-Type', 'Origin', 'Accept', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
 app.use(authenticateToken)
@@ -57,7 +57,7 @@ app.post('/refresh', (req, res) => {
             token: refreshToken
           })
           .catch(err => res.status(400).json(err))
-        res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, overwrite:true, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true, domain: 'localhost' });
+        res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, overwrite:true, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true });
         res.send({ accessToken });
       })
       .catch(err => {
@@ -68,7 +68,7 @@ app.post('/refresh', (req, res) => {
 
 app.post('/signin', (req, res) => {
   const { email, psw } = req.body 
-  const user = { email: email }
+  const user = { email: email } //
 
   postgres.select('email', 'hash').from('login')
     .where('email', '=', email) 
@@ -77,7 +77,6 @@ app.post('/signin', (req, res) => {
 
       if (isValid) {
         const refreshToken = uuid();
-
         // store token in db & cookie
         postgres.select('*').from('users')
           .where('email', '=', email)
@@ -92,7 +91,7 @@ app.post('/signin', (req, res) => {
           .then(user => {
             const { token: _, ...userWithoutRefreshToken } = user[0];
             const accessToken = generateAccessToken(userWithoutRefreshToken);
-            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true, domain: 'localhost' });
+            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true });
             res.json({ accessToken });
           })
           .catch(err => res.status(400).json('unable to get user'))
@@ -132,7 +131,7 @@ app.post('/register', (req, res) => {
                 token: refreshToken
               })
               .catch(err => res.status(400).json(err));
-            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true, domain: 'localhost' });
+            res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000, sameSite: "none", path: '/', secure: true });
             res.json({ accessToken });
           })
       })
