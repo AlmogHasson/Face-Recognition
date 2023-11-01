@@ -83,7 +83,7 @@ app.post('/signin', (req, res) => {
           .update({
             token: refreshToken
           })
-          .then(res => console.log(res + "resssssss"))
+          .returning("*")
           .catch(err => res.status(400).json(err))
 
         //return user data
