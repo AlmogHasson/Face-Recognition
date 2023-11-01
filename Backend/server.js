@@ -21,7 +21,7 @@ const app = express();
 app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
-  origin:["https://almoghasson.github.io/Face-Recognition/","http://localhost:3001"],
+  origin:["https://almoghasson.github.io/face-recognition/","http://localhost:3001"],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
@@ -73,11 +73,9 @@ app.post('/signin', (req, res) => {
   postgres.select('email', 'hash').from('login')
     .where('email', '=', email) 
     .then(data => {
-      console.log(data, "dataaaaa")
       const isValid = bcrypt.compareSync(psw, data[0].hash)
 
       if (isValid) {
-        console.log(isValid, "isvaliddddddd")
         const refreshToken = uuid();
         // store token in db & cookie
         postgres.select('*').from('users')
