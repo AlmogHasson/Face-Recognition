@@ -73,9 +73,11 @@ app.post('/signin', (req, res) => {
   postgres.select('email', 'hash').from('login')
     .where('email', '=', email) 
     .then(data => {
+      console.log(data, "dataaaaa")
       const isValid = bcrypt.compareSync(psw, data[0].hash)
 
       if (isValid) {
+        console.log(isValid, "isvaliddddddd")
         const refreshToken = uuid();
         // store token in db & cookie
         postgres.select('*').from('users')
