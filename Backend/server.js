@@ -83,7 +83,7 @@ app.post('/signin', (req, res) => {
           .update({
             token: refreshToken
           })
-          .catch(err => res.json(err))
+          .catch(err =>  res.status(400).json(err))
 
         //return user data
         return postgres.select('*').from('users')
