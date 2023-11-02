@@ -118,7 +118,11 @@ class App extends Component {
         .then(res => res.json())
         .then(res => {
           if (res.accessToken) {
-            decodeAndStoreJWT(res.accessToken)
+            decodeAndStoreJWT(res.accessToken);
+            this.setBearer(res.accessToken)
+            console.log(res.accessToken)
+            console.log((expDate * 1000 - Date.now())/1000 +"dateeee")
+
           }
         }
         )

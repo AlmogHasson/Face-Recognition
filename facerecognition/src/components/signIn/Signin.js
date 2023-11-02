@@ -22,7 +22,9 @@ class Signin extends React.Component {
      onSubmit = () =>{
         fetch('https://face-recognition-api-n3yg.onrender.com/signin', {
             method:'post',
-            headers : {'Content-Type':'application/json'},
+            headers : {
+                'Content-Type':'application/json',
+            },
             body: JSON.stringify({
                 email: this.state.signInEmail,  
                 psw: this.state.signInPsw
