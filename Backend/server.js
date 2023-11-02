@@ -21,7 +21,7 @@ const app = express();
 app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
-  origin:["https://almoghasson.github.io/","http://localhost:3001"],
+  origin:["https://almoghasson.github.io","http://localhost:3001"],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
@@ -47,7 +47,6 @@ app.post('/refresh', (req, res) => {
           throw new Error('user not found');
         }
         const { token: _, ...userWithoutRefreshToken } = user[0];
-        console.log(userWithoutRefreshToken, "user w/o token")
         const accessToken = generateAccessToken(userWithoutRefreshToken);
         const refreshToken = uuid();
 
@@ -68,7 +67,6 @@ app.post('/refresh', (req, res) => {
 
 app.post('/signin', (req, res) => {
   const { email, psw } = req.body 
-  const user = { email: email } //
 
   postgres.select('email', 'hash').from('login')
     .where('email', '=', email) 
