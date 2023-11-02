@@ -31,7 +31,6 @@ app.get('/', (req , res)=>{
   res.send("success")
 });
 
-
 app.post('/refresh', (req, res) => {
   const refreshCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
 
@@ -120,7 +119,7 @@ app.post('/register', (req, res) => {
           })
           .then(user => {
             const accessToken = generateAccessToken(user[0])
-            const refreshToken = jwt.sign(user[0], process.env.REFRESH_TOKEN_SECRET)
+            const refreshToken = jwt.sign(user[0], process.env.REFRESH_TOKEN_SECRET,)
 
             // store token in db & cookie
             postgres.select('*').from('users')
@@ -141,19 +140,6 @@ app.post('/register', (req, res) => {
       res.status(400).json('registration failed ')
     });
 
-})
-
-app.get('/profile/:id', (req, res) => {
-  const { id } = req.params;
-  postgres.select('*').from('users').where({ id })
-    .then(user => {
-      if (user.length) {
-        res.json(user[0]);
-      } else {
-        res.status(400).json('Not Found')
-      }
-    })
-    .catch(err => res.status(400).json('Error getting user'))
 })
 
 app.put('/image', (req, res) => {
@@ -201,7 +187,7 @@ function authenticateToken(req, res, next) {
 }
 
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '120s' })
 }
 
 app.listen(process.env.PORT || 3000, () => {
