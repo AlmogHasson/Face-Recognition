@@ -8,6 +8,7 @@ const { v4: uuid } = require('uuid');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const REFRESH_TOKEN_COOKIE_NAME = 'my_cookie';
+const request = require('request')
 
 const postgres = knex({
   client: 'pg',
