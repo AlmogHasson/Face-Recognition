@@ -1,4 +1,4 @@
-require('dotenv').config()//
+require('dotenv').config()
 const express = require('express');
 const bodyParder = require('body-parser');
 const bcrypt = require('bcrypt-nodejs');
@@ -30,6 +30,16 @@ app.use(authenticateToken)
 app.get('/', (req , res)=>{
   res.send("success")
 });
+
+setInterval(makeRequest,1000*60*14)
+
+function makeRequest() {
+    request('https://test-server-3ab9.onrender.com', function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            console.log(body + "test server");
+        }
+    })
+}
 
 app.post('/refresh', (req, res) => {
   const refreshCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
