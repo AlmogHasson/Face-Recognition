@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/Face-Recognition/static/css/main.49d505cf.css",
-    "main.js": "/Face-Recognition/static/js/main.7b5748f0.js",
+    "main.css": "/Face-Recognition/static/css/main.acdf9153.css",
+    "main.js": "/Face-Recognition/static/js/main.d8cdd020.js",
     "static/media/favicon.png": "/Face-Recognition/static/media/favicon.ee15c69fc4cad10a375d.png",
     "index.html": "/Face-Recognition/index.html",
-    "main.49d505cf.css.map": "/Face-Recognition/static/css/main.49d505cf.css.map",
-    "main.7b5748f0.js.map": "/Face-Recognition/static/js/main.7b5748f0.js.map"
+    "main.acdf9153.css.map": "/Face-Recognition/static/css/main.acdf9153.css.map",
+    "main.d8cdd020.js.map": "/Face-Recognition/static/js/main.d8cdd020.js.map"
   },
   "entrypoints": [
-    "static/css/main.49d505cf.css",
-    "static/js/main.7b5748f0.js"
+    "static/css/main.acdf9153.css",
+    "static/js/main.d8cdd020.js"
   ]
 }
