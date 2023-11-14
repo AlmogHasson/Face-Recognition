@@ -12,6 +12,7 @@ import ParticlesBackground from './components/ParticlesBackground';
 import { getJWT } from './common/get-jwt';
 import { decodeAndStoreJWT } from './common/decode-jwt';
 import { JWT_STORAGE_KEY } from './common/consts';
+import PacmanLoader from "react-spinners/PacmanLoader";
 
 class App extends Component {
 
@@ -31,9 +32,17 @@ class App extends Component {
         joined: ''
       },
       Bearer: '',
+      isLoading: false,
     }
   }
   refreshIntervalRef
+
+  setIsLoading = (isLoading) => {
+    this.setState({isLoading:isLoading})
+    setTimeout(()=>{
+      this.setState({isLoading: false})
+    },5000)
+  }
 
   loadUser = (data) => {
     this.setState({
@@ -120,9 +129,6 @@ class App extends Component {
           if (res.accessToken) {
             decodeAndStoreJWT(res.accessToken);
             this.setBearer(res.accessToken)
-            console.log(res.accessToken)
-            console.log((expDate * 1000 - Date.now())/1000 +"dateeee")
-
           }
         }
         )
@@ -201,38 +207,53 @@ class App extends Component {
   }
 
   render() {
-    const { isSignedIn, route, imgURL, box } = this.state;
+    const { isSignedIn, route, imgURL, box, isLoading } = this.state;
 
     return (
       <div className="App">
         <ParticlesBackground />
         <Navigation isSignedIn={isSignedIn} onRouteChange={this.onRouteChange} />
-        {route === 'home'
-          ? <div >
-            <Logo />
-            <Rank
-              name={this.state.user.name}
-              entries={this.state.user.entries} />
-            <ImageInputForm
-              box={box}
-              onInputChange={this.onInputChange}
-              onImgSubmit={this.onImgSubmit} />
-            <FaceRecognition box={box} imgURL={imgURL} />
-          </div>
-          : (
-            route === 'register'
-              ? <Register
-                loadUser={this.loadUser}
-                onRouteChange={this.onRouteChange}
-              />
-              : <Signin
-                runInterval={this.runInterval}
-                loadUser={this.loadUser}
-                onRouteChange={this.onRouteChange}
-                setBearer={this.setBearer}
-              />
-          )
+        {
+          isLoading===true ?
+            <div className='middle'>
+              <PacmanLoader
+              color={"#984aff"}
+              size={20}
+              loading={isLoading}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+            </div>
+            :
+            route === 'home'
+              ? <div >
+                <Logo />
+                <Rank
+                  name={this.state.user.name}
+                  entries={this.state.user.entries} />
+                <ImageInputForm
+                  box={box}
+                  onInputChange={this.onInputChange}
+                  onImgSubmit={this.onImgSubmit} />
+                <FaceRecognition box={box} imgURL={imgURL} />
+              </div>
+              : (
+                route === 'register'
+                  ? <Register
+                    setIsLoading={this.setIsLoading}
+                    loadUser={this.loadUser}
+                    onRouteChange={this.onRouteChange}
+                  />
+                  : <Signin
+                    setIsLoading={this.setIsLoading}
+                    runInterval={this.runInterval}
+                    loadUser={this.loadUser}
+                    onRouteChange={this.onRouteChange}
+                    setBearer={this.setBearer}
+                  />
+              )
         }
+
       </div>
     );
   }
