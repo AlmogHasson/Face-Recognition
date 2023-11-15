@@ -16,7 +16,7 @@ This is a website that uses Clarifai AI to performs face recognition on images.
 
 Install my-project with npm
 
-```bash
+```
   git clone this repository
   npm install
   cd facerecognition
