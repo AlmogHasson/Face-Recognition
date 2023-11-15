@@ -14,7 +14,7 @@ This is a website that uses Clarifai AI to performs face recognition on images.
 
 ## Installation
 
-Install my-project with npm
+Installation with npm
 
 ```
   git clone this repository
