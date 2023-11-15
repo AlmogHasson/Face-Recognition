@@ -11,18 +11,22 @@ const REFRESH_TOKEN_COOKIE_NAME = 'my_cookie';
 const request = require('request')
 
 const postgres = knex({
+  //connect to your own database here:
   client: 'pg',
-  connection: process.env.PG_CONNECTION_STRING,
-  host: "dpg-ckvqfpmb0mos73bueijg-a",
-  port: "5432",
-  user: "smart_brain_a0tg_user",
+   connection: {
+    host : '127.0.0.1',
+    user : '',
+    password : '',
+    database : ''
+  }
 });
 
 const app = express();
 app.use(cookieParser());
 app.use(bodyParder.json());
 app.use(cors({
-  origin:["https://almoghasson.github.io","http://localhost:3001"],
+  //add your own origin here if different:
+  origin:["http://localhost:3000"],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
@@ -33,14 +37,6 @@ app.get('/', (req , res)=>{
 });
 
 setInterval(makeRequest,1000*60*14)
-
-function makeRequest() {
-    request('https://test-server-3ab9.onrender.com', function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            console.log(body + "test server");
-        }
-    })
-}
 
 app.post('/refresh', (req, res) => {
   const refreshCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
@@ -201,8 +197,8 @@ function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '120s' })
 }
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`running on port ${process.env.PORT}`)
+app.listen(3000, ()=> {
+  console.log('app is running on port 3000');
 })
 
 
