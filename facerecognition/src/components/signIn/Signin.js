@@ -20,7 +20,7 @@ class Signin extends React.Component {
 
     onSubmit = () => {
         this.props.setIsLoading(true)
-        fetch('https://face-recognition-api-n3yg.onrender.com/signin', {
+        fetch('http://localhost:3000/signin', {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
